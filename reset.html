@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ตั้งรหัสผ่านใหม่ · Green Campus</title>
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .card { max-width: 440px; margin: 8vh auto; padding: 1.6rem; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+    .card h1 { margin: 0 0 .4rem; font-size: 1.6rem; color: #fff; }
+    .card label { display: block; margin: 1rem 0 .3rem; color: var(--muted); }
+    .card input { width: 100%; padding: .75rem .9rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.07); color: #fff; font: inherit; }
+    .card .btn { margin-top: 1.2rem; width: 100%; justify-content: center; padding: .8rem; }
+    .msg { margin-top: 1rem; min-height: 1.4em; }
+    .msg.err { color: #ffb4ab; } .msg.ok { color: #c9f2d8; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>ตั้งรหัสผ่านใหม่</h1>
+    <p class="muted">บัญชี Green Campus ของคุณ ตั้งรหัสใหม่แล้วกลับไปเข้าสู่ระบบในเกมได้เลย</p>
+    <form id="f" hidden>
+      <label for="p1">รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)</label>
+      <input id="p1" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="p2">ยืนยันรหัสผ่านใหม่</label>
+      <input id="p2" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="btn gold" type="submit">บันทึกรหัสผ่านใหม่</button>
+    </form>
+    <p class="msg" id="msg" role="status"></p>
+    <p><a href="./">‹ กลับหน้าดาวน์โหลดเกม</a></p>
+  </main>
+  <script src="supabase-config.js"></script>
+  <script>
+    (function () {
+      const cfg = window.GC_SUPABASE || {};
+      const msg = document.getElementById('msg');
+      const form = document.getElementById('f');
+      const say = (t, ok) => { msg.textContent = t; msg.className = 'msg ' + (ok ? 'ok' : 'err'); };
+      const hash = new URLSearchParams(location.hash.slice(1));
+      const token = hash.get('access_token');
+      // drop the token from the address bar so it isn't kept in history or shared by accident
+      if (location.hash) history.replaceState(null, '', location.pathname);
+      if (hash.get('error_description')) return say('ลิงก์ใช้ไม่ได้: ' + hash.get('error_description').replace(/\+/g, ' ') + ' · ขอลิงก์ใหม่จากหน้าเข้าสู่ระบบในเกม');
+      if (!token) return say('ไม่พบข้อมูลจากลิงก์ในอีเมล กรุณากดลิงก์จากอีเมลอีกครั้ง หรือขอลิงก์ใหม่จากเกม');
+      form.hidden = false;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+        if (p1.length < 8) return say('รหัสผ่านอย่างน้อย 8 ตัวอักษร');
+        if (p1 !== p2) return say('รหัสผ่านทั้งสองช่องไม่ตรงกัน');
+        say('กำลังบันทึก…', true);
+        try {
+          const r = await fetch(cfg.url + '/auth/v1/user', {
+            method: 'PUT',
+            headers: { apikey: cfg.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: p1 }),
+          });
+          if (r.ok) { form.hidden = true; say('ตั้งรหัสผ่านใหม่เรียบร้อย กลับไปเข้าสู่ระบบในเกมด้วยรหัสใหม่ได้เลย', true); }
+          else if (r.status === 401 || r.status === 403) say('ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ใหม่จากหน้าเข้าสู่ระบบในเกม');
+          else { const j = await r.json().catch(() => ({})); say(/weak|should/i.test(j.msg || '') ? 'รหัสผ่านง่ายเกินไป ลองใช้ตัวอักษรผสมตัวเลข' : 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'); }
+        } catch { say('เชื่อมต่ออินเทอร์เน็ตไม่ได้ ลองใหม่อีกครั้ง'); }
+      });
+    })();
+  </script>
+</body>
+</html>
