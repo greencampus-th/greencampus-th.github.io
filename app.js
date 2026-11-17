@@ -12,11 +12,14 @@
 
   if (cfg.webPlayUrl) { const p = $('#play'); p.href = cfg.webPlayUrl; p.hidden = false; }
 
-  // phones, tablets and Macs can't run the installer: say so under the button
-  if (!/Windows/i.test(navigator.userAgent)) {
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // on iPhone/iPad put the iPhone button first
+  if (ios) { const i = $('#dlIos'); i.parentNode.insertBefore(i, dl); }
+  // Android phones and Macs can run neither file: say so under the buttons
+  if (!/Windows/i.test(navigator.userAgent) && !ios) {
     const n = document.createElement('p');
     n.className = 'note';
-    n.textContent = '📱 ไฟล์ติดตั้งนี้สำหรับคอมพิวเตอร์ Windows · ส่งลิงก์หน้านี้ไปเปิดบนคอมเพื่อดาวน์โหลด' + (cfg.webPlayUrl ? ' หรือกด "เล่นบนเว็บ"' : '');
+    n.textContent = '📱 มีให้ดาวน์โหลดสำหรับคอมพิวเตอร์ Windows และ iPhone · ส่งลิงก์หน้านี้ไปเปิดบนเครื่องที่ต้องการ' + (cfg.webPlayUrl ? ' หรือกด "เล่นบนเว็บ"' : '');
     $('.cta').after(n);
   }
 
@@ -28,6 +31,7 @@
   } else {
     // stable link: always the installer of the newest release
     dl.href = `https://github.com/${cfg.repo}/releases/latest/download/${encodeURIComponent(cfg.asset)}`;
+    if (cfg.iosAsset) $('#dlIos').href = `https://github.com/${cfg.repo}/releases/latest/download/${encodeURIComponent(cfg.iosAsset)}`;
     meta.textContent = 'เวอร์ชันล่าสุด';
     fetch(`https://api.github.com/repos/${cfg.repo}/releases?per_page=6`, { headers: { Accept: 'application/vnd.github+json' } })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
@@ -37,6 +41,8 @@
         const latest = rels[0];
         const asset = (latest.assets || []).find((a) => a.name === cfg.asset);
         meta.textContent = [latest.tag_name, asset ? mb(asset.size) : null, thDate(latest.published_at)].filter(Boolean).join(' · ');
+        const ipa = (latest.assets || []).find((x) => x.name === cfg.iosAsset);
+        if (ipa) $('#dlIosMeta').textContent = [latest.tag_name, mb(ipa.size), 'ติดตั้งผ่าน SideStore'].join(' · ');
         $('#releases').innerHTML = rels.map((r) => `<article><h3>${esc(r.name || r.tag_name)}</h3>
           <div class="meta">${esc(thDate(r.published_at))}</div>
           ${r.body ? `<div class="body">${esc(r.body.trim())}</div>` : ''}</article>`).join('');

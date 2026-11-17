@@ -5,6 +5,8 @@ window.GC_SITE = {
   repo: 'greencampus-th/greencampus-th.github.io',
   // File name of the installer attached to every release (keep it the same each time).
   asset: 'GreenCampus-Setup.exe',
+  // iPhone app file attached to the same releases (installed with SideStore).
+  iosAsset: 'GreenCampus.ipa',
   // Optional: a permanent address of the web version of the game ('' hides the button).
   webPlayUrl: '',
 };

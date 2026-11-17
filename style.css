@@ -56,6 +56,8 @@ h2::before { content: ''; width: 8px; height: 1.4em; border-radius: 4px; backgro
 .steps li { counter-increment: s; position: relative; padding: 1rem 1rem 1rem 3.6rem; border-radius: 14px; background: var(--card); border: 1px solid rgba(255,255,255,.12); }
 .steps li::before { content: counter(s); position: absolute; left: 1rem; top: 1rem; width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border-radius: 50%; background: var(--gold); color: #2a1c05; font-weight: 700; }
 .req { margin-top: 1.6rem; }
+.ios-box h3 { color: var(--gold-2); margin: 1.4rem 0 .6rem; }
+.ios-box table { margin-top: 1.4rem; }
 .req h3 { color: var(--gold-2); }
 table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 14px; overflow: hidden; }
 th, td { text-align: left; padding: .7rem 1rem; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }

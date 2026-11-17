@@ -33,7 +33,7 @@
   <header class="top">
     <a class="brand" href="#"><img src="assets/icon.png" alt="" width="36" height="36"><span>GREEN CAMPUS</span></a>
     <nav aria-label="เมนู">
-      <a href="#gallery">ภาพในเกม</a><a href="#features">จุดเด่น</a><a href="#install">วิธีติดตั้ง</a><a href="#faq">คำถาม</a>
+      <a href="#gallery">ภาพในเกม</a><a href="#features">จุดเด่น</a><a href="#install">ติดตั้ง Windows</a><a href="#ios">ติดตั้ง iPhone</a><a href="#faq">คำถาม</a>
       <a class="btn gold small" href="#download">⬇ ดาวน์โหลด</a>
     </nav>
   </header>
@@ -49,9 +49,13 @@
           <span class="ico" aria-hidden="true">⊞</span>
           <span><b>ดาวน์โหลดสำหรับ Windows</b><small id="dlMeta">กำลังตรวจสอบเวอร์ชันล่าสุด…</small></span>
         </a>
+        <a class="btn gold big" id="dlIos" href="#ios" rel="noopener">
+          <span class="ico" aria-hidden="true">📱</span>
+          <span><b>ดาวน์โหลดสำหรับ iPhone</b><small id="dlIosMeta">ไฟล์ .ipa · ติดตั้งผ่าน SideStore</small></span>
+        </a>
         <a class="btn alt big" id="play" href="#" hidden>▶ เล่นบนเว็บ</a>
       </div>
-      <p class="note">ฟรี · Windows 10/11 (64-bit) · ไม่ต้องใช้สิทธิ์ผู้ดูแลเครื่อง · <a href="#install">วิธีติดตั้ง</a></p>
+      <p class="note">ฟรี · Windows 10/11 (64-bit) · iPhone iOS 15 ขึ้นไป · <a href="#install">วิธีติดตั้ง Windows</a> · <a href="#ios">วิธีติดตั้ง iPhone</a></p>
     </div>
   </section>
 
@@ -82,7 +86,7 @@
     </section>
 
     <section id="install" class="wrap">
-      <h2>วิธีติดตั้ง</h2>
+      <h2>วิธีติดตั้งบน Windows</h2>
       <ol class="steps">
         <li><b>ดาวน์โหลด</b> กดปุ่ม "ดาวน์โหลดสำหรับ Windows" จะได้ไฟล์ <code>GreenCampus-Setup.exe</code></li>
         <li><b>เปิดไฟล์ติดตั้ง</b> ถ้า Windows ขึ้นหน้าต่างสีน้ำเงิน <i>"Windows protected your PC"</i> ให้กด <b>More info</b> แล้วกด <b>Run anyway</b> (ขึ้นเพราะไฟล์ยังไม่ได้ซื้อใบรับรองดิจิทัล)</li>
@@ -101,6 +105,35 @@
       </div>
     </section>
 
+    <section id="ios" class="wrap">
+      <h2>วิธีติดตั้งบน iPhone</h2>
+      <p class="muted">iPhone ลงแอปนอก App Store ได้ผ่านแอป <b>SideStore</b> ซึ่งเซ็นแอปด้วย Apple ID ของคุณเอง ใช้ Apple ID ฟรีได้ ต้องใช้คอมพิวเตอร์ Windows <b>แค่ครั้งแรกครั้งเดียว</b> (ยืมคอมเพื่อนได้) หลังจากนั้นทำบนมือถือทั้งหมด</p>
+      <div class="ios-box">
+        <h3>ก. ลง SideStore (ครั้งแรกครั้งเดียว ใช้คอม Windows)</h3>
+        <ol class="steps">
+          <li><b>เตรียมคอม</b> ติดตั้ง <b>iTunes</b> และ <b>iCloud</b> จากเว็บ <a href="https://www.apple.com/itunes/" rel="noopener">apple.com</a> (ไม่ใช่จาก Microsoft Store) และติดตั้ง <b>AltServer</b> จาก <a href="https://altstore.io" rel="noopener">altstore.io</a></li>
+          <li><b>โหลด SideStore</b> ดาวน์โหลดไฟล์ <code>SideStore.ipa</code> จาก <a href="https://sidestore.io" rel="noopener">sidestore.io</a></li>
+          <li><b>เสียบสาย iPhone</b> เข้ากับคอม แล้วกด <b>เชื่อถือ (Trust)</b> บนมือถือ</li>
+          <li><b>ส่ง SideStore ลงมือถือ</b> กด Shift ค้างแล้วคลิกไอคอน AltServer ที่มุมขวาล่างของจอ → <b>Sideload .ipa</b> → เลือก <code>SideStore.ipa</code> → ใส่ Apple ID</li>
+          <li><b>เปิดใช้บน iPhone</b> การตั้งค่า → ทั่วไป → การจัดการ VPN และอุปกรณ์ → กด <b>เชื่อถือ</b> อีเมล Apple ID ของคุณ แล้วเปิด <b>โหมดนักพัฒนา</b> ที่ การตั้งค่า → ความเป็นส่วนตัวและความปลอดภัย (เครื่องจะรีสตาร์ต)</li>
+          <li><b>ตั้งค่า SideStore</b> เปิดแอป SideStore แล้วทำตามที่แอปบอก (ไฟล์ pairing และแอป VPN สำหรับต่ออายุผ่าน Wi-Fi) ถ้าขั้นตอนต่างจากนี้ ให้ทำตาม <a href="https://docs.sidestore.io" rel="noopener">คู่มือของ SideStore</a></li>
+        </ol>
+        <h3>ข. ลงเกม Green Campus (ทำบน iPhone)</h3>
+        <ol class="steps">
+          <li><b>ดาวน์โหลด</b> เปิดหน้านี้ใน Safari บน iPhone แล้วกดปุ่ม <b>"ดาวน์โหลดสำหรับ iPhone"</b> ไฟล์ <code>GreenCampus.ipa</code> จะอยู่ในแอป <b>ไฟล์ (Files)</b> → ดาวน์โหลด</li>
+          <li><b>ติดตั้ง</b> เปิดแอป VPN ที่ตั้งไว้ → เปิด SideStore → แท็บ <b>My Apps</b> → กด <b>+</b> → เลือก <code>GreenCampus.ipa</code></li>
+          <li><b>เข้าเกม</b> แตะไอคอน Green Campus บนหน้าจอโฮม เข้าสู่ระบบ หรือกด "เข้าชมวิทยาลัยแบบผู้เยี่ยมชม"</li>
+          <li><b>ต่ออายุทุก 7 วัน</b> แอปที่ลงด้วย Apple ID ฟรีมีอายุ 7 วัน ก่อนครบให้เปิดแอป VPN → SideStore → กด <b>Refresh All</b> (ไม่ต้องใช้คอม)</li>
+        </ol>
+        <table>
+          <tr><th>รุ่นที่รองรับ</th><td>iPhone ที่ใช้ iOS 15 ขึ้นไป (แนะนำ iPhone 11 ขึ้นไป)</td></tr>
+          <tr><th>การควบคุม</th><td>จอยซ้ายล่างเดิน · ลากนิ้วหมุนกล้อง · แตะป้ายเพื่อโต้ตอบ · กราฟิกเริ่มที่ "ต่ำ"</td></tr>
+          <tr><th>ข้อจำกัด Apple ID ฟรี</th><td>ต่ออายุทุก 7 วัน · เปิดใช้แอปที่ลงเองได้พร้อมกัน 3 แอป (นับ SideStore ด้วย)</td></tr>
+          <tr><th>ความปลอดภัย</th><td>ดาวน์โหลดจากเว็บทางการเท่านั้น และแนะนำให้ใช้ Apple ID สำรองที่ไม่ใช่บัญชีหลัก</td></tr>
+        </table>
+      </div>
+    </section>
+
     <section id="changes" class="wrap">
       <h2>มีอะไรใหม่</h2>
       <div id="releases" class="releases"><p class="muted">กำลังโหลดรายการเวอร์ชัน…</p></div>
@@ -114,6 +147,8 @@
       <details><summary>เซิร์ฟเวอร์ต้องใส่อะไร?</summary><p>กดปุ่ม "เซิร์ฟเวอร์" มุมขวาบนของหน้าเข้าสู่ระบบในเกม แล้วใส่ที่อยู่ที่ครูหรือผู้ดูแลแจ้ง ถ้าต่อไม่ได้ ยังเล่นแบบออฟไลน์ได้</p></details>
       <details><summary>เครื่องกระตุก ทำยังไง?</summary><p>กด <b>O</b> ในเกมเพื่อเปิดตั้งค่ากราฟิก แล้วเลือก "ต่ำ" (เป็นค่าเริ่มต้นอยู่แล้ว) ปิดโปรแกรมอื่นที่ไม่ใช้ และเสียบสายชาร์จโน้ตบุ๊ก</p></details>
       <details><summary>อัปเดตเวอร์ชันใหม่ยังไง?</summary><p>ดาวน์โหลดไฟล์ติดตั้งจากหน้านี้อีกครั้งแล้วติดตั้งทับได้เลย การตั้งค่าและบัญชีที่จำไว้ยังอยู่</p></details>
+      <details><summary>ทำไม iPhone ต้องลงผ่าน SideStore ไม่มีใน App Store?</summary><p>การขึ้น App Store หรือ TestFlight ต้องสมัคร Apple Developer (ปีละ 99 USD) โครงงานนี้จึงแจกเป็นไฟล์ .ipa ให้ลงด้วย Apple ID ของผู้เล่นเองผ่าน SideStore ซึ่งฟรี</p></details>
+      <details><summary>เกมบน iPhone เปิดไม่ขึ้น / หายไป?</summary><p>แอปหมดอายุครบ 7 วัน ให้เปิดแอป VPN แล้วกด Refresh All ใน SideStore ถ้ายังไม่ได้ ลบเกมแล้วลงไฟล์ .ipa ใหม่</p></details>
       <details><summary>ถอนการติดตั้งยังไง?</summary><p>Settings → Apps → Installed apps → Green Campus → Uninstall</p></details>
     </section>
 
