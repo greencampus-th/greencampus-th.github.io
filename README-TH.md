@@ -1,5 +1,7 @@
 # เว็บดาวน์โหลดเกม Green Campus
 
+**ลิงก์เว็บ:** https://greencampus-th.github.io · repo: https://github.com/greencampus-th/greencampus-th.github.io
+
 เว็บหน้าเดียวสำหรับแจกไฟล์ติดตั้งเกม แยกจากโปรเจกต์เกม (`green-campus`)
 - **ตัวเว็บ:** ฝากที่ **GitHub Pages** (ฟรี ออนไลน์ตลอด ลิงก์ถาวร)
 - **ไฟล์ติดตั้ง:** เก็บที่ **GitHub Releases** (ฟรี รับไฟล์ได้ถึง 2 GB)
@@ -16,9 +18,9 @@ node serve.mjs
 2. ติดตั้ง GitHub CLI: `winget install --id GitHub.cli` แล้วปิดและเปิด PowerShell ใหม่
 3. ล็อกอิน: `gh auth login` → GitHub.com → HTTPS → Login with a web browser แล้วทำตามที่หน้าจอบอก
 4. ในโฟลเดอร์นี้รัน: `.\scripts\setup-github.ps1`
-   - สร้าง repo `green-campus-download` แบบสาธารณะ อัปโหลดเว็บ และเปิด GitHub Pages
+   - สร้าง repo `greencampus-th.github.io` ในองค์กร `greencampus-th` (แบบสาธารณะ) อัปโหลดเว็บ และเปิด GitHub Pages
    - แก้ `config.js` ให้ปุ่มดาวน์โหลดชี้ไปที่ repo ของคุณ
-   - ได้ลิงก์เว็บแบบ `https://<ชื่อผู้ใช้>.github.io/green-campus-download/` (ครั้งแรกรอ 1–2 นาที)
+   - ได้ลิงก์เว็บ **https://greencampus-th.github.io** (ครั้งแรกรอ 1–2 นาที)
 5. อัปโหลดไฟล์ติดตั้ง: `.\scripts\publish-release.ps1 1.0.0`
 
 ## ออกเวอร์ชันใหม่
