@@ -32,6 +32,12 @@
     .hist li { display: flex; justify-content: space-between; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.08); }
     .tag { font-size: .85rem; padding: .1rem .6rem; border-radius: 99px; white-space: nowrap; align-self: start; }
     .tag.approved { background: #3fae6b; color: #06210f; } .tag.review, .tag.checking { background: var(--gold); color: #2a1c05; } .tag.rejected { background: #ff8a70; color: #2b0a04; }
+    .codes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .8rem; }
+    .code { padding: .9rem; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); text-align: center; }
+    .code .qr { background: #fff; padding: 8px; border-radius: 8px; display: inline-block; margin: .5rem 0; }
+    .code .qr img, .code .qr canvas { display: block; width: 160px; height: 160px; }
+    .code b.c { display: block; font-size: 1.3rem; letter-spacing: .08em; color: var(--gold-2); }
+    .code.used { opacity: .55; }
     .msg { color: #ffb4ab; min-height: 1.4em; margin-top: .6rem; }
   </style>
 </head>
@@ -64,6 +70,12 @@
         <button class="btn alt small" id="logout" type="button">ออกจากระบบ</button>
       </section>
 
+      <section class="panel" id="rewards">
+        <h2>🎫 รหัสของรางวัลของฉัน</h2>
+        <p class="muted">แลกของรางวัลได้ที่ร้านของพี่ NPC ในลานเช็กอินในเกม แล้วนำรหัสหรือ QR นี้ไปให้ครูสแกนเพื่อรับของ</p>
+        <div class="codes" id="codes"><p class="muted">ยังไม่มี</p></div>
+      </section>
+
       <section class="panel" id="send">
         <h2>📷 ส่งรูปกิจกรรมในชีวิตจริง</h2>
         <div class="acts" id="acts"></div>
@@ -89,6 +101,7 @@
       </section>
     </div>
   </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="sb.js"></script>
   <script>
@@ -104,7 +117,7 @@
       if (!prof) { SB.signOut(); return start(); }
       $('#login').hidden = true; $('#app').hidden = false;
       $('#who').textContent = prof.display_name + ' (' + prof.username + ')';
-      await Promise.all([loadPoints(), loadActs(), loadHist()]);
+      await Promise.all([loadPoints(), loadActs(), loadHist(), loadCodes()]);
     }
     async function loadPoints() {
       const r = await SB.rpc('my_points');
@@ -130,6 +143,21 @@
       const rows = r.ok ? r.data : [];
       const title = (id) => (acts.find((a) => a.id === id) || {}).title || id;
       $('#hist').innerHTML = rows.length ? rows.map((s) => `<li><span><b>${esc(title(s.activity_id))}</b><br><small class="muted">${new Date(s.created_at).toLocaleString('th-TH')} · ${esc(s.note || '')}</small></span><span class="tag ${esc(s.status)}">${STATUS[s.status] || s.status}${s.points ? ' +' + s.points : ''}</span></li>`).join('') : '<li class="muted">ยังไม่มี</li>';
+    }
+    const RSTATUS = { pending: 'รอรับของ', claimed: 'รับของแล้ว', cancelled: 'ยกเลิกแล้ว', expired: 'หมดอายุ (คืนแต้มแล้ว)' };
+    async function loadCodes() {
+      const r = await SB.rpc('my_redemptions');
+      const rows = r.ok && Array.isArray(r.data) ? r.data : [];
+      const box = $('#codes');
+      if (!rows.length) { box.innerHTML = '<p class="muted">ยังไม่ได้แลกของรางวัล</p>'; return; }
+      box.innerHTML = rows.map((x, i) => `<div class="code${x.status === 'pending' ? '' : ' used'}">
+        <div>${esc(x.icon)} <b>${esc(x.title)}</b></div>
+        ${x.status === 'pending' ? `<div class="qr" id="qr${i}"></div>` : ''}
+        <b class="c">${esc(x.code)}</b>
+        <small class="muted">${RSTATUS[x.status] || x.status}${x.status === 'pending' ? ' · รับที่ ' + esc(x.pickup) + '<br>ภายใน ' + new Date(x.expires_at).toLocaleDateString('th-TH') : ''}</small>
+      </div>`).join('');
+      if (window.QRCode) rows.forEach((x, i) => { if (x.status === 'pending') new QRCode(document.getElementById('qr' + i), { text: x.code, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M }); });
+      if (location.hash === '#rewards') $('#rewards').scrollIntoView();
     }
     function choose(id) {
       chosen = acts.find((a) => a.id === id);

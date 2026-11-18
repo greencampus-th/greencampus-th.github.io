@@ -55,10 +55,43 @@
         <button class="btn alt small" data-tab="approved" type="button">✅ ผ่าน</button>
         <button class="btn alt small" data-tab="rejected" type="button">❌ ไม่ผ่าน</button>
         <button class="btn alt small" data-tab="acts" type="button">🗂️ จัดการกิจกรรม</button>
+        <button class="btn alt small" data-tab="claim" type="button">🎁 มอบของรางวัล</button>
+        <button class="btn alt small" data-tab="rewards" type="button">🛍️ ของรางวัล (แอดมิน)</button>
       </div>
       <section id="queue">
         <p class="muted" id="qinfo"></p>
         <div class="cards2" id="subs"></div>
+      </section>
+      <section id="claimView" hidden>
+        <div class="panel" style="max-width:560px">
+          <h2>มอบของรางวัล</h2>
+          <p class="muted">ให้นักเรียนเปิดรหัสของรางวัล (ในเกมหรือหน้านักเรียน) แล้วพิมพ์รหัสหรือสแกน QR</p>
+          <div style="display:flex;gap:.5rem"><input id="code" placeholder="GC-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"><button class="btn gold" id="lookup" type="button">ตรวจรหัส</button></div>
+          <button class="btn alt small" id="scan" type="button" hidden style="margin-top:.6rem">📷 สแกน QR</button>
+          <video id="cam" playsinline muted hidden style="width:100%;margin-top:.6rem;border-radius:12px"></video>
+          <div id="claimInfo" style="margin-top:1rem"></div>
+        </div>
+      </section>
+      <section id="rewardsView" hidden>
+        <div class="panel">
+          <h2 id="rFormTitle">เพิ่มของรางวัล</h2>
+          <form id="rForm">
+            <div class="grid2">
+              <div><label for="r_id">รหัส (a-z 0-9 -)</label><input id="r_id" pattern="[a-z0-9-]{3,40}" required></div>
+              <div><label for="r_title">ชื่อของรางวัล</label><input id="r_title" maxlength="80" required></div>
+              <div><label for="r_icon">ไอคอน (อีโมจิ)</label><input id="r_icon" maxlength="8" value="🎁"></div>
+              <div><label for="r_cost">ใช้ Green Point</label><input id="r_cost" type="number" min="1" value="100" required></div>
+              <div><label for="r_stock">จำนวนในคลัง (เว้นว่าง = ไม่จำกัด)</label><input id="r_stock" type="number" min="0"></div>
+              <div><label for="r_limit">แลกได้กี่ชิ้นต่อคน</label><input id="r_limit" type="number" min="1" max="100" value="1" required></div>
+            </div>
+            <label for="r_desc">รายละเอียด</label><input id="r_desc" maxlength="300">
+            <label for="r_pickup">จุดรับของ</label><input id="r_pickup" maxlength="120" value="ห้องกิจกรรมนักเรียน">
+            <label><input id="r_active" type="checkbox" checked style="width:auto"> เปิดให้แลก</label>
+            <div style="display:flex;gap:.6rem;margin-top:.8rem"><button class="btn gold" type="submit">บันทึก</button><button class="btn alt" type="button" id="rNew">ล้างฟอร์ม</button></div>
+            <p class="msg" id="rMsg" role="status"></p>
+          </form>
+        </div>
+        <div class="panel"><table><thead><tr><th>ของรางวัล</th><th>แต้ม</th><th>คงเหลือ</th><th>สถานะ</th></tr></thead><tbody id="rRows"></tbody></table></div>
       </section>
       <section id="actsView" hidden>
         <div class="panel">
@@ -108,8 +141,9 @@
     function setTab(t) {
       tab = t;
       document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
-      $('#queue').hidden = t === 'acts'; $('#actsView').hidden = t !== 'acts';
-      t === 'acts' ? loadActs() : loadQueue();
+      $('#queue').hidden = ['acts', 'claim', 'rewards'].includes(t);
+      $('#actsView').hidden = t !== 'acts'; $('#claimView').hidden = t !== 'claim'; $('#rewardsView').hidden = t !== 'rewards';
+      if (t === 'acts') loadActs(); else if (t === 'rewards') loadRewards(); else if (t === 'claim') $('#code').focus(); else loadQueue();
     }
     async function photoUrl(path) {
       const r = await SB.call('/storage/v1/object/sign/activity-photos/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 900 }) });
@@ -168,6 +202,77 @@
       $('#actMsg').className = 'msg' + (r.ok ? ' ok' : '');
       $('#actMsg').textContent = r.ok ? 'บันทึกแล้ว' : 'บันทึกไม่สำเร็จ: ' + SB.errText(r.data, 'ตรวจข้อมูลอีกครั้ง (รหัสซ้ำหรือรูปแบบไม่ถูกต้อง)');
       if (r.ok) { loadActs(); if (!editing) edit(null); }
+    });
+    // ---- hand over a reward
+    const RSTATUS = { pending: 'รอรับของ', claimed: 'รับของไปแล้ว', cancelled: 'ยกเลิกแล้ว', expired: 'หมดอายุ' };
+    async function lookup(code) {
+      code = (code || $('#code').value).trim().toUpperCase();
+      if (!code) return;
+      $('#code').value = code;
+      const r = await SB.rpc('lookup_redemption', { p_code: code });
+      const d = r.data || {};
+      if (!d.ok) { $('#claimInfo').innerHTML = '<p class="msg">ไม่พบรหัสนี้</p>'; return; }
+      $('#claimInfo').innerHTML = `<div class="sub"><p style="margin:0"><b>${esc(d.icon)} ${esc(d.title)}</b> · ${d.cost} GP</p>
+        <p class="muted" style="margin:.3rem 0">${esc(d.display_name || '?')} · ${esc(d.username || '')}${d.student_id ? ' · ' + esc(d.student_id) : ''}</p>
+        <p style="margin:.3rem 0">สถานะ: <b>${RSTATUS[d.status] || d.status}</b>${d.status === 'pending' ? ' · หมดอายุ ' + new Date(d.expires_at).toLocaleDateString('th-TH') : ''}${d.claimed_at ? ' · ' + new Date(d.claimed_at).toLocaleString('th-TH') : ''}</p>
+        ${d.status === 'pending' ? '<button class="btn gold" id="doClaim" type="button">✅ มอบของให้แล้ว</button>' : ''}</div>`;
+      const btn = $('#doClaim');
+      if (btn) btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const c = await SB.rpc('claim_redemption', { p_code: code });
+        if (c.ok && c.data && c.data.ok) lookup(code); else { alert('บันทึกไม่สำเร็จ'); btn.disabled = false; }
+      });
+    }
+    $('#lookup').addEventListener('click', () => lookup());
+    $('#code').addEventListener('keydown', (e) => { if (e.key === 'Enter') lookup(); });
+    // QR scanning where the browser can read barcodes (Chrome / Android); otherwise type the code
+    if ('BarcodeDetector' in window) {
+      $('#scan').hidden = false;
+      $('#scan').addEventListener('click', async () => {
+        const cam = $('#cam');
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          cam.srcObject = stream; cam.hidden = false; await cam.play();
+          const det = new BarcodeDetector({ formats: ['qr_code'] });
+          const stop = () => { stream.getTracks().forEach((t) => t.stop()); cam.hidden = true; };
+          const tick = async () => {
+            if (cam.hidden) return;
+            const found = await det.detect(cam).catch(() => []);
+            if (found.length && /^GC-/.test(found[0].rawValue)) { stop(); lookup(found[0].rawValue); } else requestAnimationFrame(tick);
+          };
+          tick();
+        } catch { alert('เปิดกล้องไม่ได้ ให้พิมพ์รหัสแทน'); }
+      });
+    }
+    // ---- rewards (admin)
+    let rewards = [];
+    async function loadRewards() {
+      const r = await SB.call('/rest/v1/rewards?select=*&order=sort');
+      rewards = r.ok ? r.data : [];
+      $('#rRows').innerHTML = rewards.map((w) => `<tr data-id="${esc(w.id)}" style="cursor:pointer"><td>${esc(w.icon)} ${esc(w.title)}<br><small class="muted">${esc(w.id)}</small></td><td>${w.cost}</td><td>${w.stock == null ? 'ไม่จำกัด' : w.stock}</td><td>${w.active ? 'เปิด' : 'ปิด'}</td></tr>`).join('');
+      document.querySelectorAll('#rRows tr').forEach((tr) => tr.addEventListener('click', () => editReward(rewards.find((w) => w.id === tr.dataset.id))));
+    }
+    function editReward(w) {
+      $('#rFormTitle').textContent = w ? 'แก้ไขของรางวัล' : 'เพิ่มของรางวัล';
+      $('#r_id').value = w ? w.id : ''; $('#r_id').readOnly = !!w;
+      $('#r_title').value = w ? w.title : ''; $('#r_icon').value = w ? w.icon : '🎁'; $('#r_cost').value = w ? w.cost : 100;
+      $('#r_stock').value = w && w.stock != null ? w.stock : ''; $('#r_limit').value = w ? w.per_user_limit : 1;
+      $('#r_desc').value = w ? w.description : ''; $('#r_pickup').value = w ? w.pickup : 'ห้องกิจกรรมนักเรียน'; $('#r_active').checked = w ? w.active : true;
+      $('#rMsg').textContent = '';
+    }
+    $('#rNew').addEventListener('click', () => editReward(null));
+    $('#rForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const row = { title: $('#r_title').value.trim(), icon: $('#r_icon').value.trim() || '🎁', cost: +$('#r_cost').value,
+        stock: $('#r_stock').value === '' ? null : +$('#r_stock').value, per_user_limit: +$('#r_limit').value,
+        description: $('#r_desc').value.trim(), pickup: $('#r_pickup').value.trim() || 'ห้องกิจกรรมนักเรียน', active: $('#r_active').checked };
+      const editing = $('#r_id').readOnly;
+      const r = editing
+        ? await SB.call('/rest/v1/rewards?id=eq.' + encodeURIComponent($('#r_id').value), { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(row) })
+        : await SB.call('/rest/v1/rewards', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ id: $('#r_id').value.trim(), ...row, sort: 200 }) });
+      $('#rMsg').className = 'msg' + (r.ok ? ' ok' : '');
+      $('#rMsg').textContent = r.ok ? 'บันทึกแล้ว' : (r.status === 403 || r.status === 401 ? 'เฉพาะบัญชีแอดมินเท่านั้นที่แก้ของรางวัลได้' : 'บันทึกไม่สำเร็จ: ' + SB.errText(r.data, 'ตรวจข้อมูลอีกครั้ง'));
+      if (r.ok) { loadRewards(); if (!editing) editReward(null); }
     });
     document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
     $('#loginForm').addEventListener('submit', async (e) => {
