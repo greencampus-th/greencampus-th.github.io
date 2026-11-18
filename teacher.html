@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>หน้าครู · ศูนย์กิจกรรม Green Campus</title>
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .panel { padding: 1.2rem; border-radius: 16px; background: var(--card); border: 1px solid var(--line); margin-bottom: 1rem; }
+    label { display: block; margin: .6rem 0 .25rem; color: var(--muted); font-size: .95rem; }
+    input, select, textarea { width: 100%; padding: .6rem .8rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.07); color: #fff; font: inherit; }
+    select option { color: #000; }
+    .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .tabs button[aria-pressed="true"] { outline: 2px solid var(--gold); }
+    .cards2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .sub { padding: .9rem; border-radius: 14px; background: var(--navy-2); border: 1px solid rgba(255,255,255,.15); }
+    .sub img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: #000; cursor: zoom-in; }
+    .sub .row { display: flex; gap: .5rem; margin-top: .6rem; }
+    .sub .row .btn { flex: 1; justify-content: center; padding: .5rem; }
+    .ai { font-size: .9rem; color: var(--muted); margin: .4rem 0; }
+    .tag { font-size: .8rem; padding: .1rem .5rem; border-radius: 99px; }
+    .tag.approved { background: #3fae6b; color: #06210f; } .tag.review, .tag.checking { background: var(--gold); color: #2a1c05; } .tag.rejected { background: #ff8a70; color: #2b0a04; }
+    table td, table th { font-size: .95rem; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+    @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+    .msg { color: #ffb4ab; min-height: 1.3em; }
+    .msg.ok { color: #c9f2d8; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./"><img src="assets/icon.png" alt="" width="36" height="36"><span>GREEN CAMPUS</span></a>
+    <nav aria-label="เมนู"><a href="activity.html">หน้านักเรียน</a><button class="btn alt small" id="logout" type="button" hidden>ออกจากระบบ</button></nav>
+  </header>
+  <main class="wrap">
+    <h1 class="logo" style="font-size:2rem;margin-top:1rem">หน้าครู · ศูนย์กิจกรรม</h1>
+
+    <section class="panel" id="login" hidden style="max-width:460px">
+      <h2>เข้าสู่ระบบ (บัญชีครู)</h2>
+      <form id="loginForm">
+        <label for="lid">ชื่อผู้ใช้ / อีเมล</label><input id="lid" autocomplete="username" required>
+        <label for="lpw">รหัสผ่าน</label><input id="lpw" type="password" autocomplete="current-password" required>
+        <button class="btn gold" style="margin-top:1rem" type="submit">เข้าสู่ระบบ</button>
+        <p class="msg" id="loginMsg" role="status"></p>
+      </form>
+      <p class="muted">บัญชีต้องมีสิทธิ์ staff, designer หรือ admin (ผู้ดูแลตั้งได้ด้วย <code>npm run user -- role ชื่อผู้ใช้ staff</code>)</p>
+    </section>
+
+    <div id="app" hidden>
+      <div class="tabs">
+        <button class="btn alt small" data-tab="review" type="button">🕒 รอตรวจ</button>
+        <button class="btn alt small" data-tab="approved" type="button">✅ ผ่าน</button>
+        <button class="btn alt small" data-tab="rejected" type="button">❌ ไม่ผ่าน</button>
+        <button class="btn alt small" data-tab="acts" type="button">🗂️ จัดการกิจกรรม</button>
+      </div>
+      <section id="queue">
+        <p class="muted" id="qinfo"></p>
+        <div class="cards2" id="subs"></div>
+      </section>
+      <section id="actsView" hidden>
+        <div class="panel">
+          <h2 id="formTitle">เพิ่มกิจกรรม</h2>
+          <form id="actForm">
+            <div class="grid2">
+              <div><label for="f_id">รหัสกิจกรรม (a-z 0-9 -)</label><input id="f_id" pattern="[a-z0-9-]{3,40}" required></div>
+              <div><label for="f_kind">ประเภท</label><select id="f_kind"><option value="real">ในชีวิตจริง (ส่งรูป ให้ AI ตรวจ)</option><option value="game">ในเกม (ไม่ต้องส่งรูป)</option></select></div>
+              <div><label for="f_title">ชื่อกิจกรรม</label><input id="f_title" maxlength="80" required></div>
+              <div><label for="f_icon">ไอคอน (อีโมจิ)</label><input id="f_icon" maxlength="8" value="🌱"></div>
+              <div><label for="f_points">Green Point</label><input id="f_points" type="number" min="1" max="500" value="10" required></div>
+              <div><label for="f_per_day">ทำได้กี่ครั้งต่อวัน</label><input id="f_per_day" type="number" min="1" max="10" value="1" required></div>
+            </div>
+            <label for="f_desc">คำอธิบายสำหรับนักเรียน</label><input id="f_desc" maxlength="500">
+            <label for="f_ai">AI ต้องเห็นอะไรในรูป (เขียนภาษาอังกฤษหรือไทยก็ได้ ยิ่งชัดยิ่งตรวจแม่น)</label><textarea id="f_ai" rows="3" maxlength="800"></textarea>
+            <label><input id="f_active" type="checkbox" checked style="width:auto"> เปิดใช้งาน</label>
+            <div style="display:flex;gap:.6rem;margin-top:.8rem"><button class="btn gold" type="submit">บันทึก</button><button class="btn alt" type="button" id="newAct">ล้างฟอร์ม</button></div>
+            <p class="msg" id="actMsg" role="status"></p>
+          </form>
+        </div>
+        <div class="panel"><table><thead><tr><th>กิจกรรม</th><th>ประเภท</th><th>แต้ม</th><th>สถานะ</th></tr></thead><tbody id="actRows"></tbody></table></div>
+      </section>
+    </div>
+  </main>
+  <div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="รูปขยาย"><button aria-label="ปิด">✕</button><img alt=""><p></p></div>
+  <script src="supabase-config.js"></script>
+  <script src="sb.js"></script>
+  <script>
+  (function () {
+    const $ = (s) => document.querySelector(s);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const STATUS = { approved: 'ผ่าน', review: 'รอครูตรวจ', checking: 'กำลังตรวจ', rejected: 'ไม่ผ่าน' };
+    let tab = 'review', acts = [];
+
+    async function start() {
+      $('#logout').hidden = !SB.session;
+      if (!SB.session) { $('#login').hidden = false; $('#app').hidden = true; return; }
+      const p = await SB.profile();
+      if (!p || !['staff', 'designer', 'admin'].includes(p.role)) {
+        $('#login').hidden = false; $('#app').hidden = true;
+        $('#loginMsg').textContent = 'บัญชีนี้ไม่มีสิทธิ์ครู';
+        SB.signOut(); return;
+      }
+      $('#login').hidden = true; $('#app').hidden = false;
+      setTab(tab);
+    }
+    function setTab(t) {
+      tab = t;
+      document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
+      $('#queue').hidden = t === 'acts'; $('#actsView').hidden = t !== 'acts';
+      t === 'acts' ? loadActs() : loadQueue();
+    }
+    async function photoUrl(path) {
+      const r = await SB.call('/storage/v1/object/sign/activity-photos/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 900 }) });
+      const u = r.ok && (r.data.signedURL || r.data.signedUrl);
+      return u ? SB.url + '/storage/v1' + u : '';
+    }
+    async function loadQueue() {
+      $('#subs').innerHTML = '<p class="muted">กำลังโหลด…</p>';
+      const r = await SB.rpc('review_queue', { p_status: tab });
+      const rows = r.ok ? r.data : [];
+      $('#qinfo').textContent = rows.length ? `${rows.length} รายการ (ใหม่สุดก่อน)` : 'ไม่มีรายการ';
+      $('#subs').innerHTML = rows.map((s) => {
+        const ai = s.ai_result || {};
+        const aiText = ai.error ? 'AI ตรวจไม่ได้: ' + ai.error : `AI: ${ai.matches ? 'ตรงกิจกรรม' : 'ไม่ตรง'} · มั่นใจ ${Math.round((ai.confidence || 0) * 100)}%${ai.reused_or_screenshot ? ' · ⚠️ อาจเป็นภาพจากจอ/อินเทอร์เน็ต' : ''}`;
+        return `<article class="sub" data-id="${s.id}">
+          <img data-path="${esc(s.photo_path)}" alt="รูปกิจกรรม ${esc(s.activity_title)}">
+          <p style="margin:.5rem 0 0"><b>${esc(s.activity_title)}</b> <span class="tag ${esc(s.status)}">${STATUS[s.status] || s.status}</span></p>
+          <p class="muted" style="margin:.2rem 0">${esc(s.display_name || '?')} · ${esc(s.username || '')}${s.student_id ? ' · ' + esc(s.student_id) : ''} · ${new Date(s.created_at).toLocaleString('th-TH')}</p>
+          <p class="ai">${esc(aiText)}${ai.shows_th ? '<br>ในรูปเห็น: ' + esc(ai.shows_th) : ''}<br>${esc(ai.reason_th || s.note || '')}</p>
+          <input placeholder="หมายเหตุถึงนักเรียน (ถ้ามี)" maxlength="300">
+          <div class="row"><button class="btn gold" data-ok="1" type="button">✅ ผ่าน</button><button class="btn alt" data-ok="0" type="button">❌ ไม่ผ่าน</button></div>
+        </article>`;
+      }).join('');
+      document.querySelectorAll('.sub img').forEach(async (img) => { img.src = await photoUrl(img.dataset.path); img.addEventListener('click', () => { const lb = $('#lb'); lb.querySelector('img').src = img.src; lb.hidden = false; }); });
+      document.querySelectorAll('.sub .row button').forEach((b) => b.addEventListener('click', async () => {
+        const card = b.closest('.sub');
+        b.disabled = true;
+        const res = await SB.rpc('review_submission', { p_id: card.dataset.id, p_approve: b.dataset.ok === '1', p_note: card.querySelector('input').value || null });
+        if (res.ok && res.data && res.data.ok) card.remove(); else { alert('บันทึกไม่สำเร็จ'); b.disabled = false; }
+      }));
+    }
+    async function loadActs() {
+      const r = await SB.call('/rest/v1/activities?select=*&order=sort');
+      acts = r.ok ? r.data : [];
+      $('#actRows').innerHTML = acts.map((a) => `<tr data-id="${esc(a.id)}" style="cursor:pointer"><td>${esc(a.icon)} ${esc(a.title)}<br><small class="muted">${esc(a.id)}</small></td><td>${a.kind === 'real' ? 'ชีวิตจริง' : 'ในเกม'}</td><td>${a.points} × ${a.per_day}/วัน</td><td>${a.active ? 'เปิด' : 'ปิด'}</td></tr>`).join('');
+      document.querySelectorAll('#actRows tr').forEach((tr) => tr.addEventListener('click', () => edit(acts.find((a) => a.id === tr.dataset.id))));
+    }
+    function edit(a) {
+      $('#formTitle').textContent = a ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม';
+      $('#f_id').value = a ? a.id : ''; $('#f_id').readOnly = !!a;
+      $('#f_kind').value = a ? a.kind : 'real'; $('#f_title').value = a ? a.title : ''; $('#f_icon').value = a ? a.icon : '🌱';
+      $('#f_points').value = a ? a.points : 10; $('#f_per_day').value = a ? a.per_day : 1;
+      $('#f_desc').value = a ? a.description : ''; $('#f_ai').value = a ? a.ai_criteria : ''; $('#f_active').checked = a ? a.active : true;
+      $('#actMsg').textContent = ''; $('#f_title').focus();
+    }
+    $('#newAct').addEventListener('click', () => edit(null));
+    $('#actForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const row = { kind: $('#f_kind').value, title: $('#f_title').value.trim(), icon: $('#f_icon').value.trim() || '🌱', points: +$('#f_points').value, per_day: +$('#f_per_day').value,
+        description: $('#f_desc').value.trim(), ai_criteria: $('#f_ai').value.trim(), active: $('#f_active').checked };
+      if (row.kind === 'real' && row.ai_criteria.length < 10) { $('#actMsg').textContent = 'กิจกรรมในชีวิตจริงต้องบอกว่า AI ต้องเห็นอะไรในรูป'; return; }
+      const editing = $('#f_id').readOnly;
+      const r = editing
+        ? await SB.call('/rest/v1/activities?id=eq.' + encodeURIComponent($('#f_id').value), { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(row) })
+        : await SB.call('/rest/v1/activities', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ id: $('#f_id').value.trim(), ...row, sort: 200, created_by: SB.session.user_id }) });
+      $('#actMsg').className = 'msg' + (r.ok ? ' ok' : '');
+      $('#actMsg').textContent = r.ok ? 'บันทึกแล้ว' : 'บันทึกไม่สำเร็จ: ' + SB.errText(r.data, 'ตรวจข้อมูลอีกครั้ง (รหัสซ้ำหรือรูปแบบไม่ถูกต้อง)');
+      if (r.ok) { loadActs(); if (!editing) edit(null); }
+    });
+    document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
+    $('#loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('#loginMsg').textContent = 'กำลังตรวจสอบ…';
+      const r = await SB.signIn($('#lid').value, $('#lpw').value);
+      $('#loginMsg').textContent = r.ok ? '' : r.error;
+      if (r.ok) start();
+    });
+    $('#logout').addEventListener('click', () => { SB.signOut(); start(); });
+    const lb = $('#lb'); lb.addEventListener('click', (e) => { if (e.target === lb || e.target.tagName === 'BUTTON') lb.hidden = true; });
+    start();
+  })();
+  </script>
+</body>
+</html>

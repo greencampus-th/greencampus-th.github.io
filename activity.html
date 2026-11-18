@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ศูนย์กิจกรรม · Green Campus</title>
+  <meta name="description" content="ส่งรูปกิจกรรมรักษ์โลกในชีวิตจริง ระบบ AI ช่วยตรวจ รับ Green Point">
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .wrap.narrow { max-width: 760px; }
+    .panel { padding: 1.2rem; border-radius: 16px; background: var(--card); border: 1px solid var(--line); margin-bottom: 1rem; }
+    .panel h2 { font-size: 1.3rem; margin-bottom: .8rem; }
+    label { display: block; margin: .8rem 0 .3rem; color: var(--muted); }
+    input[type=text], input[type=password] { width: 100%; padding: .75rem .9rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.07); color: #fff; font: inherit; }
+    .btn.full { width: 100%; justify-content: center; padding: .8rem; margin-top: 1rem; }
+    .me { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .pts { font-size: 1.6rem; font-weight: 700; color: var(--gold-2); }
+    .acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .6rem; }
+    .act { text-align: left; padding: .8rem; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); color: var(--text); cursor: pointer; font: inherit; }
+    .act[aria-pressed="true"] { border-color: var(--gold); background: rgba(226,184,74,.15); }
+    .act b { display: block; } .act small { color: var(--muted); }
+    .act.done { opacity: .55; }
+    .pick { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+    .preview { max-height: 360px; border-radius: 12px; margin-top: .8rem; border: 1px solid var(--line); }
+    .result { margin-top: 1rem; padding: 1rem; border-radius: 12px; }
+    .result.approved { background: rgba(63,174,107,.2); border: 1px solid #3fae6b; }
+    .result.review, .result.checking { background: rgba(226,184,74,.15); border: 1px solid var(--gold); }
+    .result.rejected, .result.error { background: rgba(255,120,100,.15); border: 1px solid #ff8a70; }
+    .hist { list-style: none; padding: 0; margin: 0; }
+    .hist li { display: flex; justify-content: space-between; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .tag { font-size: .85rem; padding: .1rem .6rem; border-radius: 99px; white-space: nowrap; align-self: start; }
+    .tag.approved { background: #3fae6b; color: #06210f; } .tag.review, .tag.checking { background: var(--gold); color: #2a1c05; } .tag.rejected { background: #ff8a70; color: #2b0a04; }
+    .msg { color: #ffb4ab; min-height: 1.4em; margin-top: .6rem; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./"><img src="assets/icon.png" alt="" width="36" height="36"><span>GREEN CAMPUS</span></a>
+    <nav aria-label="เมนู"><a href="./">ดาวน์โหลดเกม</a><a class="btn gold small" href="#send">📷 ส่งกิจกรรม</a></nav>
+  </header>
+  <main class="wrap narrow">
+    <h1 class="logo" style="font-size:2rem;margin-top:1.4rem">ศูนย์กิจกรรม</h1>
+    <p class="muted">ทำกิจกรรมรักษ์โลกในชีวิตจริง ถ่ายรูปส่งที่นี่ ระบบ AI ช่วยตรวจ ถ้ารูปชัดเจนได้ Green Point ทันที ถ้าไม่แน่ใจครูจะตรวจให้ (กิจกรรมในเกมไม่ต้องส่งรูป ทำในเกมได้เลย)</p>
+
+    <section class="panel" id="login" hidden>
+      <h2>เข้าสู่ระบบ</h2>
+      <form id="loginForm">
+        <label for="lid">ชื่อผู้ใช้ / เลขประจำตัวนักเรียน / อีเมล</label>
+        <input id="lid" type="text" autocomplete="username" required>
+        <label for="lpw">รหัสผ่าน</label>
+        <input id="lpw" type="password" autocomplete="current-password" required>
+        <button class="btn gold full" type="submit">เข้าสู่ระบบ</button>
+        <p class="msg" id="loginMsg" role="status"></p>
+      </form>
+      <p class="muted">ยังไม่มีบัญชี? สมัครในเกม Green Campus ได้เลย</p>
+    </section>
+
+    <div id="app" hidden>
+      <section class="panel me">
+        <div><div class="muted">สวัสดี</div><b id="who"></b></div>
+        <div style="text-align:right"><div class="muted">Green Point สะสม</div><div class="pts" id="pts">–</div></div>
+        <button class="btn alt small" id="logout" type="button">ออกจากระบบ</button>
+      </section>
+
+      <section class="panel" id="send">
+        <h2>📷 ส่งรูปกิจกรรมในชีวิตจริง</h2>
+        <div class="acts" id="acts"></div>
+        <div id="chosen" hidden>
+          <p id="actDesc" style="margin-top:1rem"></p>
+          <div class="pick">
+            <label class="btn gold" style="margin:0">📸 ถ่ายรูป / เลือกรูป<input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+          </div>
+          <img class="preview" id="preview" alt="รูปที่เลือก" hidden>
+          <button class="btn gold full" id="submit" type="button" hidden>ส่งให้ตรวจ</button>
+          <div class="result" id="result" role="status" hidden></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>🎮 กิจกรรมในเกม (ไม่ต้องส่งรูป)</h2>
+        <ul class="hist" id="gameActs"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>ประวัติการส่งรูป</h2>
+        <ul class="hist" id="hist"><li class="muted">ยังไม่มี</li></ul>
+      </section>
+    </div>
+  </main>
+  <script src="supabase-config.js"></script>
+  <script src="sb.js"></script>
+  <script>
+  (function () {
+    const $ = (s) => document.querySelector(s);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const STATUS = { approved: 'ผ่าน', review: 'รอครูตรวจ', checking: 'กำลังตรวจ', rejected: 'ไม่ผ่าน' };
+    let acts = [], chosen = null, blob = null, today = {};
+
+    async function start() {
+      if (!SB.session) { $('#login').hidden = false; $('#app').hidden = true; return; }
+      const prof = await SB.profile();
+      if (!prof) { SB.signOut(); return start(); }
+      $('#login').hidden = true; $('#app').hidden = false;
+      $('#who').textContent = prof.display_name + ' (' + prof.username + ')';
+      await Promise.all([loadPoints(), loadActs(), loadHist()]);
+    }
+    async function loadPoints() {
+      const r = await SB.rpc('my_points');
+      $('#pts').textContent = r.ok ? r.data : '–';
+      const t = await SB.rpc('my_activity_today');
+      today = t.ok && t.data ? t.data : {};
+    }
+    async function loadActs() {
+      const r = await SB.call('/rest/v1/activities?select=id,kind,title,description,icon,points,per_day&active=eq.true&order=sort');
+      acts = r.ok ? r.data : [];
+      const real = acts.filter((a) => a.kind === 'real');
+      $('#acts').innerHTML = real.map((a) => {
+        const done = (today[a.id] || 0) >= a.per_day;
+        return `<button class="act${done ? ' done' : ''}" type="button" data-id="${esc(a.id)}" aria-pressed="false"><b>${esc(a.icon)} ${esc(a.title)}</b><small>+${a.points} GP${done ? ' · ✔ วันนี้ทำแล้ว' : ''}</small></button>`;
+      }).join('') || '<p class="muted">ยังไม่มีกิจกรรม</p>';
+      document.querySelectorAll('.act').forEach((b) => b.addEventListener('click', () => choose(b.dataset.id)));
+      $('#gameActs').innerHTML = acts.filter((a) => a.kind === 'game').map((a) => `<li><span>${esc(a.icon)} ${esc(a.title)}<br><small class="muted">${esc(a.description)}</small></span><span class="tag ${(today[a.id] || 0) >= a.per_day ? 'approved' : 'checking'}">+${a.points} GP${(today[a.id] || 0) >= a.per_day ? ' ✔' : ''}</span></li>`).join('');
+      const want = new URLSearchParams(location.search).get('a');
+      if (want && real.some((a) => a.id === want)) choose(want);
+    }
+    async function loadHist() {
+      const r = await SB.call('/rest/v1/activity_submissions?select=created_at,status,note,points,activity_id&order=created_at.desc&limit=20&user_id=eq.' + SB.session.user_id);
+      const rows = r.ok ? r.data : [];
+      const title = (id) => (acts.find((a) => a.id === id) || {}).title || id;
+      $('#hist').innerHTML = rows.length ? rows.map((s) => `<li><span><b>${esc(title(s.activity_id))}</b><br><small class="muted">${new Date(s.created_at).toLocaleString('th-TH')} · ${esc(s.note || '')}</small></span><span class="tag ${esc(s.status)}">${STATUS[s.status] || s.status}${s.points ? ' +' + s.points : ''}</span></li>`).join('') : '<li class="muted">ยังไม่มี</li>';
+    }
+    function choose(id) {
+      chosen = acts.find((a) => a.id === id);
+      document.querySelectorAll('.act').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+      $('#chosen').hidden = false;
+      $('#actDesc').innerHTML = `<b>${esc(chosen.icon)} ${esc(chosen.title)}</b> · +${chosen.points} Green Point<br><span class="muted">${esc(chosen.description)}</span>`;
+      $('#result').hidden = true;
+    }
+    // shrink to max 1600px JPEG: faster upload, cheaper AI check
+    function shrink(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob((b) => (b ? resolve(b) : reject(new Error('resize'))), 'image/jpeg', 0.85);
+          URL.revokeObjectURL(img.src);
+        };
+        img.onerror = () => reject(new Error('ไฟล์นี้ไม่ใช่รูปภาพ'));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+    $('#file').addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      try {
+        blob = await shrink(f);
+        $('#preview').src = URL.createObjectURL(blob); $('#preview').hidden = false; $('#submit').hidden = false; $('#result').hidden = true;
+      } catch (err) { show('error', err.message); }
+    });
+    function show(cls, html) { const r = $('#result'); r.className = 'result ' + cls; r.innerHTML = html; r.hidden = false; }
+    $('#submit').addEventListener('click', async () => {
+      if (!blob || !chosen) return;
+      $('#submit').disabled = true;
+      show('checking', '⏳ กำลังอัปโหลดและให้ AI ตรวจรูป…');
+      try {
+        const path = SB.session.user_id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+        const up = await SB.call('/storage/v1/object/activity-photos/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+        if (!up.ok) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+        const r = await SB.call('/functions/v1/' + (window.GC_SUPABASE.fn || 'verify-activity'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ activity_id: chosen.id, photo_path: path }) });
+        if (!r.ok) throw new Error((r.data && r.data.error) || 'ตรวจรูปไม่สำเร็จ');
+        const d = r.data;
+        if (d.status === 'approved') show('approved', `✅ ผ่าน! ได้ +${d.points} Green Point<br><small>${esc(d.reason)}</small>`);
+        else if (d.status === 'rejected') show('rejected', `❌ ไม่ผ่าน<br><small>${esc(d.reason)}</small>`);
+        else show('review', `🕒 รอครูตรวจ<br><small>${esc(d.reason)}</small>`);
+        blob = null; $('#preview').hidden = true; $('#submit').hidden = true; $('#file').value = '';
+        await Promise.all([loadPoints(), loadHist()]); await loadActs(); choose(chosen.id); $('#result').hidden = false;
+      } catch (err) { show('error', '⚠️ ' + esc(err.message)); }
+      $('#submit').disabled = false;
+    });
+    $('#loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('#loginMsg').textContent = 'กำลังตรวจสอบ…';
+      const r = await SB.signIn($('#lid').value, $('#lpw').value);
+      $('#loginMsg').textContent = r.ok ? '' : r.error;
+      if (r.ok) start();
+    });
+    $('#logout').addEventListener('click', () => { SB.signOut(); start(); });
+    start();
+  })();
+  </script>
+</body>
+</html>
