@@ -13,10 +13,12 @@
   if (cfg.webPlayUrl) { const p = $('#play'); p.href = cfg.webPlayUrl; p.hidden = false; }
 
   const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  // on iPhone/iPad put the iPhone button first
+  const android = /Android/i.test(navigator.userAgent);
+  // phones: put their own button first
   if (ios) { const i = $('#dlIos'); i.parentNode.insertBefore(i, dl); }
-  // Android phones and Macs can run neither file: say so under the buttons
-  if (!/Windows/i.test(navigator.userAgent) && !ios) {
+  if (android) { const a = $('#dlAndroid'); a.parentNode.insertBefore(a, dl); }
+  // Macs and Linux PCs can run none of the files: say so under the buttons
+  if (!/Windows/i.test(navigator.userAgent) && !ios && !android) {
     const n = document.createElement('p');
     n.className = 'note';
     n.textContent = '📱 มีให้ดาวน์โหลดสำหรับคอมพิวเตอร์ Windows และ iPhone · ส่งลิงก์หน้านี้ไปเปิดบนเครื่องที่ต้องการ' + (cfg.webPlayUrl ? ' หรือกด "เล่นบนเว็บ"' : '');
@@ -31,6 +33,7 @@
   } else {
     // stable link: always the installer of the newest release
     dl.href = `https://github.com/${cfg.repo}/releases/latest/download/${encodeURIComponent(cfg.asset)}`;
+    if (cfg.androidAsset) $('#dlAndroid').href = `https://github.com/${cfg.repo}/releases/latest/download/${encodeURIComponent(cfg.androidAsset)}`;
     if (cfg.iosAsset) $('#dlIos').href = `https://github.com/${cfg.repo}/releases/latest/download/${encodeURIComponent(cfg.iosAsset)}`;
     meta.textContent = 'เวอร์ชันล่าสุด';
     fetch(`https://api.github.com/repos/${cfg.repo}/releases?per_page=6`, { headers: { Accept: 'application/vnd.github+json' } })
@@ -42,6 +45,8 @@
         const asset = (latest.assets || []).find((a) => a.name === cfg.asset);
         meta.textContent = [latest.tag_name, asset ? mb(asset.size) : null, thDate(latest.published_at)].filter(Boolean).join(' · ');
         const ipa = (latest.assets || []).find((x) => x.name === cfg.iosAsset);
+        const apk = (latest.assets || []).find((x) => x.name === cfg.androidAsset);
+        if (apk) $('#dlAndroidMeta').textContent = [latest.tag_name, mb(apk.size), 'ติดตั้งได้ทันที'].join(' · ');
         if (ipa) $('#dlIosMeta').textContent = [latest.tag_name, mb(ipa.size), 'ติดตั้งผ่าน SideStore'].join(' · ');
         $('#releases').innerHTML = rels.map((r) => `<article><h3>${esc(r.name || r.tag_name)}</h3>
           <div class="meta">${esc(thDate(r.published_at))}</div>

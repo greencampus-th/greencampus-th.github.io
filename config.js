@@ -7,6 +7,8 @@ window.GC_SITE = {
   asset: 'GreenCampus-Setup.exe',
   // iPhone app file attached to the same releases (installed with SideStore).
   iosAsset: 'GreenCampus.ipa',
+  // Android app file attached to the same releases.
+  androidAsset: 'GreenCampus.apk',
   // Optional: a permanent address of the web version of the game ('' hides the button).
   webPlayUrl: '',
 };

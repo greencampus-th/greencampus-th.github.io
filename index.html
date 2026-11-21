@@ -33,7 +33,7 @@
   <header class="top">
     <a class="brand" href="#"><img src="assets/icon.png" alt="" width="36" height="36"><span>GREEN CAMPUS</span></a>
     <nav aria-label="เมนู">
-      <a href="#gallery">ภาพในเกม</a><a href="#features">จุดเด่น</a><a href="#install">ติดตั้ง Windows</a><a href="#ios">ติดตั้ง iPhone</a><a href="#faq">คำถาม</a><a href="activity.html">ศูนย์กิจกรรม</a>
+      <a href="#gallery">ภาพในเกม</a><a href="#features">จุดเด่น</a><a href="#install">ติดตั้ง Windows</a><a href="#android">ติดตั้ง Android</a><a href="#ios">ติดตั้ง iPhone</a><a href="#faq">คำถาม</a><a href="activity.html">ศูนย์กิจกรรม</a>
       <a class="btn gold small" href="#download">⬇ ดาวน์โหลด</a>
     </nav>
   </header>
@@ -53,9 +53,13 @@
           <span class="ico" aria-hidden="true">📱</span>
           <span><b>ดาวน์โหลดสำหรับ iPhone</b><small id="dlIosMeta">ไฟล์ .ipa · ติดตั้งผ่าน SideStore</small></span>
         </a>
+        <a class="btn gold big" id="dlAndroid" href="#android" rel="noopener">
+          <span class="ico" aria-hidden="true">🤖</span>
+          <span><b>ดาวน์โหลดสำหรับ Android</b><small id="dlAndroidMeta">ไฟล์ .apk · ติดตั้งได้ทันที</small></span>
+        </a>
         <a class="btn alt big" id="play" href="#" hidden>▶ เล่นบนเว็บ</a>
       </div>
-      <p class="note">ฟรี · Windows 10/11 (64-bit) · iPhone iOS 15 ขึ้นไป · <a href="#install">วิธีติดตั้ง Windows</a> · <a href="#ios">วิธีติดตั้ง iPhone</a></p>
+      <p class="note">ฟรี · Windows 10/11 (64-bit) · Android 7 ขึ้นไป · iPhone iOS 15 ขึ้นไป · <a href="#install">ติดตั้ง Windows</a> · <a href="#android">ติดตั้ง Android</a> · <a href="#ios">ติดตั้ง iPhone</a></p>
     </div>
   </section>
 
@@ -105,6 +109,17 @@
           <tr><th>อินเทอร์เน็ต</th><td>ใช้ตอนเข้าสู่ระบบ ถ้าไม่มีเน็ตยังเล่นแบบผู้เยี่ยมชม/ออฟไลน์ได้</td></tr>
         </table>
       </div>
+    </section>
+
+    <section id="android" class="wrap">
+      <h2>วิธีติดตั้งบน Android</h2>
+      <ol class="steps">
+        <li><b>ดาวน์โหลด</b> เปิดหน้านี้ใน Chrome บนมือถือ แล้วกด <b>"ดาวน์โหลดสำหรับ Android"</b> จะได้ไฟล์ <code>GreenCampus.apk</code> ถ้า Chrome ถามว่าไฟล์อาจเป็นอันตราย ให้กด <b>ดาวน์โหลดต่อ</b> (เตือนกับทุกแอปที่ไม่ได้มาจาก Play Store)</li>
+        <li><b>เปิดไฟล์</b> แตะการแจ้งเตือนดาวน์โหลดเสร็จ หรือเปิดแอป <b>ไฟล์ / Downloads</b> แล้วแตะ <code>GreenCampus.apk</code></li>
+        <li><b>อนุญาตการติดตั้ง</b> ครั้งแรกเครื่องจะขึ้นว่า "ไม่อนุญาตให้ติดตั้งแอปจากแหล่งนี้" ให้กด <b>การตั้งค่า</b> → เปิด <b>อนุญาตจากแหล่งนี้</b> แล้วกดย้อนกลับ</li>
+        <li><b>ติดตั้ง</b> กด <b>ติดตั้ง</b> ถ้า Google Play Protect ถาม ให้กด <b>ติดตั้งต่อ</b> แล้วเปิดเกมจากไอคอน Green Campus</li>
+      </ol>
+      <p class="muted">อัปเดตเวอร์ชันใหม่: ดาวน์โหลดไฟล์ .apk ใหม่จากหน้านี้แล้วติดตั้งทับได้เลย ฟาร์มและบัญชีไม่หาย · แนะนำมือถือ RAM 3 GB ขึ้นไป</p>
     </section>
 
     <section id="ios" class="wrap">
